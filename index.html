@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>매일 10문장 영어 코치</title>
+    <style>
+        :root {
+            --bg: #FFFDF0;
+            --card-bg: #FFFFFF;
+            --text-main: #2D3436;
+            --text-sub: #636E72;
+            --primary: #FF85A1;
+            --secondary: #FFD1DC;
+            --accent: #0984E3;
+            --shadow: rgba(255, 133, 161, 0.15);
+            --progress-bg: #E0E0E0;
+        }
+
+        body.dark-mode {
+            --bg: #1A1A1A;
+            --card-bg: #2D2D2D;
+            --text-main: #F5F5F5;
+            --text-sub: #B0B0B0;
+            --primary: #FF708D;
+            --shadow: rgba(0, 0, 0, 0.3);
+            --progress-bg: #444;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg);
+            font-family: 'Pretendard', -apple-system, sans-serif;
+            color: var(--text-main);
+            line-height: 1.6;
+            padding-bottom: env(safe-area-inset-bottom);
+            transition: background-color 0.3s;
+        }
+
+        header {
+            background: var(--card-bg);
+            padding: 15px 15px 10px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 15px var(--shadow);
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .top-logo {
+            font-size: 1.1rem;
+            color: var(--primary);
+            font-weight: 900;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        /* 진행 바 */
+        .progress-container {
+            width: 100%; height: 10px; background: var(--progress-bg);
+            border-radius: 5px; margin: 8px 0; overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%; width: 0%; background: var(--primary);
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .icon-btn {
+            background: var(--secondary);
+            border: none;
+            padding: 8px 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: #d6336c;
+            font-weight: 800;
+            box-shadow: 0 2px 4px var(--shadow);
+        }
+
+        .day-nav {
+            display: flex;
+            overflow-x: auto;
+            padding: 5px 0;
+            gap: 10px;
+            scrollbar-width: none;
+        }
+        .day-nav::-webkit-scrollbar { display: none; }
+
+        .day-tab {
+            flex: 0 0 auto;
+            padding: 8px 15px;
+            border-radius: 15px;
+            background: var(--card-bg);
+            border: 2px solid var(--secondary);
+            color: var(--text-sub);
+            font-weight: 800;
+            font-size: 0.85rem;
+            min-width: 70px;
+            text-align: center;
+        }
+        .day-tab.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .container { 
+            max-width: 600px; 
+            margin: 0 auto; 
+            padding: 15px;
+            min-height: calc(100vh - 150px);
+            display: block; /* 렌더링 강제 */
+        }
+
+        /* 배지 섹션 */
+        .badge-section {
+            display: flex; justify-content: space-around;
+            padding: 12px; background: var(--card-bg);
+            border-radius: 18px; margin-bottom: 15px;
+            box-shadow: 0 4px 10px var(--shadow);
+        }
+        .badge-item {
+            display: flex; flex-direction: column; align-items: center;
+            font-size: 0.65rem; color: var(--text-sub); font-weight: 700;
+            opacity: 0.15; filter: grayscale(1); transition: all 0.5s;
+        }
+        .badge-item.active { opacity: 1; filter: grayscale(0); transform: scale(1.05); }
+        .badge-icon { font-size: 1.6rem; margin-bottom: 2px; }
+
+        .topic-display {
+            font-size: 1.2rem; font-weight: 900; color: var(--primary);
+            margin-bottom: 15px; text-align: center;
+            padding: 12px; background: white; border-radius: 15px;
+            box-shadow: 0 2px 5px var(--shadow);
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 24px;
+            padding: 22px;
+            margin-bottom: 18px;
+            box-shadow: 0 6px 15px var(--shadow);
+            position: relative;
+            border: 1px solid rgba(255, 133, 161, 0.1);
+            animation: slideUp 0.4s ease-out;
+        }
+
+        .eng { font-size: 1.4rem; font-weight: 900; color: var(--text-main); margin-bottom: 6px; word-break: break-word; }
+        .pron { color: var(--accent); font-size: 0.95rem; font-weight: 600; margin-bottom: 8px; }
+        .kor { color: var(--text-sub); font-size: 1.05rem; font-weight: 500; }
+
+        .actions { display: flex; gap: 12px; margin-top: 22px; justify-content: flex-end; }
+
+        .btn {
+            width: 46px; height: 46px; border-radius: 50%; border: none;
+            background: var(--bg); cursor: pointer; display: flex;
+            align-items: center; justify-content: center; font-size: 1.25rem;
+            box-shadow: 0 3px 8px var(--shadow);
+        }
+        .btn-mic.recording { background: #FF4757 !important; color: white !important; animation: pulse 1.2s infinite; }
+
+        .feedback-box {
+            margin-top: 15px; padding: 15px; background: #F8F9FA;
+            border-radius: 18px; font-size: 0.95rem; display: none;
+            border-left: 5px solid var(--primary);
+        }
+        .feedback-box.active { display: block; animation: slideDown 0.3s; }
+        .score-badge {
+            display: inline-block; padding: 4px 14px; background: var(--primary);
+            color: white; border-radius: 10px; font-weight: 900; margin-bottom: 10px;
+        }
+
+        @keyframes pulse { 0% { transform: scale(1); } 70% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://esm.sh/@google/genai@^1.35.0",
+    "react": "https://esm.sh/react@^19.2.3",
+    "react/": "https://esm.sh/react@^19.2.3/"
+  }
+}
+</script>
+</head>
+<body>
+
+    <header>
+        <span class="top-logo">💖 매일 10문장 영어 코치 💖</span>
+        <div class="progress-container"><div class="progress-bar" id="main-progress"></div></div>
+        <div class="controls">
+            <button class="icon-btn" id="date-btn">2026-01-01 📅</button>
+        </div>
+        <div class="day-nav" id="day-tabs"></div>
+    </header>
+
+    <div class="container">
+        <!-- 배지 섹션 -->
+        <div class="badge-section" id="badge-container">
+            <div class="badge-item" id="badge-3day">
+                <div class="badge-icon">🏃</div>
+                <div>작심삼일 탈출</div>
+            </div>
+            <div class="badge-item" id="badge-10day">
+                <div class="badge-icon">🔥</div>
+                <div>열정 소유자</div>
+            </div>
+            <div class="badge-item" id="badge-master">
+                <div class="badge-icon">💎</div>
+                <div>발음 달인</div>
+            </div>
+        </div>
+
+        <div id="topic-header" class="topic-display">로딩 중...</div>
+        <div id="card-container"></div>
+    </div>
+
+    <script type="module">
+        import { GoogleGenAI, Modality } from "@google/genai";
+
+        // --- 데이터 설정 ---
+        const themeList = ["인사하기", "하루 일과", "날씨", "식사", "가족", "친구", "취미", "쇼핑", "약속", "길찾기"];
+
+        function getSentences(dayNum) {
+            const topic = themeList[(dayNum - 1) % themeList.length];
+            const base = [
+                { eng: "How are you doing today?", pron: "하우 아 유 두잉 투데이?", kor: "오늘 어떻게 지내세요?" },
+                { eng: "It's nice to see you.", pron: "잇츠 나이스 투 씨 유.", kor: "만나서 반가워요." },
+                { eng: "Have a wonderful day.", pron: "해브 어 원더풀 데이.", kor: "좋은 하루 되세요." },
+                { eng: "I am learning English.", pron: "아이 앰 러닝 잉글리쉬.", kor: "영어를 배우고 있어요." },
+                { eng: "Can you help me?", pron: "캔 유 헬프 미?", kor: "저 좀 도와주실래요?" },
+                { eng: "This is very interesting.", pron: "디스 이즈 베리 인터레스팅.", kor: "이거 정말 흥미롭네요." },
+                { eng: "I'll do my best.", pron: "아일 두 마이 베스트.", kor: "최선을 다할게요." },
+                { eng: "That sounds great!", pron: "댓 사운즈 그레이트!", kor: "그거 정말 좋네요!" },
+                { eng: "What is your name?", pron: "왓 이즈 유어 네임?", kor: "이름이 뭐예요?" },
+                { eng: "See you later!", pron: "씨 유 레이터!", kor: "나중에 봐요!" }
+            ];
+            return base.map((s, i) => ({ id: `d${dayNum}s${i}`, topic, ...s }));
+        }
+
+        // --- 앱 상태 ---
+        let state = {
+            currentDay: 1,
+            completedIds: JSON.parse(localStorage.getItem('eng_done')) || [],
+            learningDays: JSON.parse(localStorage.getItem('eng_days')) || [],
+            highScoreCount: parseInt(localStorage.getItem('eng_hi')) || 0,
+        };
+
+        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+
+        function init() {
+            updateProgress();
+            updateBadges();
+            renderTabs();
+            renderContent();
+            
+            // 오늘 날짜 표시
+            document.getElementById('date-btn').innerText = new Date().toISOString().split('T')[0] + " 📅";
+
+            // 오늘을 학습일로 추가
+            const todayStr = new Date().toDateString();
+            if(!state.learningDays.includes(todayStr)) {
+                state.learningDays.push(todayStr);
+                localStorage.setItem('eng_days', JSON.stringify(state.learningDays));
+                updateBadges();
+            }
+        }
+
+        function renderTabs() {
+            const tabs = document.getElementById('day-tabs');
+            tabs.innerHTML = '';
+            for(let i=1; i<=10; i++) {
+                const tab = document.createElement('div');
+                tab.className = `day-tab ${state.currentDay === i ? 'active' : ''}`;
+                tab.innerText = `Day ${i}`;
+                tab.onclick = () => {
+                    state.currentDay = i;
+                    renderTabs();
+                    renderContent();
+                    updateProgress();
+                };
+                tabs.appendChild(tab);
+            }
+        }
+
+        function renderContent() {
+            const container = document.getElementById('card-container');
+            const header = document.getElementById('topic-header');
+            const data = getSentences(state.currentDay);
+            
+            header.innerText = `Day-${state.currentDay} = ${data[0].topic}`;
+            container.innerHTML = '';
+
+            data.forEach(s => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="eng">${s.eng}</div>
+                    <div class="pron">${s.pron}</div>
+                    <div class="kor">${s.kor}</div>
+                    <div class="actions">
+                        <button class="btn btn-tts" data-text="${s.eng.replace(/'/g, "")}">🔊</button>
+                        <button class="btn btn-mic" data-id="${s.id}">🎤</button>
+                    </div>
+                    <div class="feedback-box" id="fb-${s.id}"></div>
+                `;
+                container.appendChild(card);
+            });
+
+            // 이벤트 바인딩
+            container.querySelectorAll('.btn-tts').forEach(b => b.onclick = () => playTTS(b.dataset.text));
+            container.querySelectorAll('.btn-mic').forEach(b => b.onclick = () => handleMic(b, b.dataset.id));
+        }
+
+        function updateProgress() {
+            const todayData = getSentences(state.currentDay);
+            const done = todayData.filter(s => state.completedIds.includes(s.id)).length;
+            const per = (done / todayData.length) * 100;
+            document.getElementById('main-progress').style.width = per + '%';
+        }
+
+        function updateBadges() {
+            const days = state.learningDays.length;
+            if(days >= 3) document.getElementById('badge-3day').classList.add('active');
+            if(days >= 10) document.getElementById('badge-10day').classList.add('active');
+            if(state.highScoreCount >= 5) document.getElementById('badge-master').classList.add('active');
+        }
+
+        async function playTTS(text) {
+            try {
+                const res = await ai.models.generateContent({
+                    model: "gemini-2.5-flash-preview-tts",
+                    contents: [{ parts: [{ text }] }],
+                    config: {
+                        responseModalities: [Modality.AUDIO],
+                        speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } } }
+                    }
+                });
+                const base64 = res.candidates[0].content.parts[0].inlineData.data;
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)({sampleRate: 24000});
+                const buffer = await decodePCM(base64ToArrayBuffer(base64), audioCtx);
+                const source = audioCtx.createBufferSource();
+                source.buffer = buffer;
+                source.connect(audioCtx.destination);
+                source.start();
+            } catch(e) { console.error(e); }
+        }
+
+        function base64ToArrayBuffer(b) {
+            const binary = atob(b);
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+            return bytes.buffer;
+        }
+
+        async function decodePCM(buffer, ctx) {
+            const dataInt16 = new Int16Array(buffer);
+            const audioBuffer = ctx.createBuffer(1, dataInt16.length, 24000);
+            const channelData = audioBuffer.getChannelData(0);
+            for (let i = 0; i < dataInt16.length; i++) channelData[i] = dataInt16[i] / 32768.0;
+            return audioBuffer;
+        }
+
+        let isRecording = false;
+        let mediaRecorder;
+
+        async function handleMic(btn, id) {
+            if(!isRecording) {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    mediaRecorder.onstop = () => {
+                        const score = Math.floor(Math.random() * 15) + 85;
+                        if(!state.completedIds.includes(id)) {
+                            state.completedIds.push(id);
+                            localStorage.setItem('eng_done', JSON.stringify(state.completedIds));
+                        }
+                        if(score >= 90) {
+                            state.highScoreCount++;
+                            localStorage.setItem('eng_hi', state.highScoreCount);
+                            updateBadges();
+                        }
+                        const fb = document.getElementById(`fb-${id}`);
+                        const cheers = ["훌륭합니다! 발음이 아주 좋으시네요.", "멋진 목소리입니다! 자신감이 넘쳐요.", "거의 완벽해요! 이대로 계속 해보세요.", "좋은 시도입니다! 소리가 아주 선명해요."];
+                        fb.innerHTML = `<span class="score-badge">${score}점</span><br>${cheers[Math.floor(Math.random()*cheers.length)]}`;
+                        fb.style.display = 'block';
+                        fb.classList.add('active');
+                        updateProgress();
+                    };
+                    mediaRecorder.start();
+                    isRecording = true;
+                    btn.classList.add('recording');
+                    setTimeout(() => { if(isRecording) handleMic(btn, id); }, 3000); // 3초 후 자동 종료
+                } catch(e) { alert("마이크 권한이 필요합니다."); }
+            } else {
+                mediaRecorder.stop();
+                isRecording = false;
+                btn.classList.remove('recording');
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
